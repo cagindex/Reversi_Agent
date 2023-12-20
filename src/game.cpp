@@ -7,12 +7,11 @@ public:
     void start()
     {
         int row, col;
+        board.show(true);
         while(board.game_status())
         {
             if (board.which_one_turn() == player_turn)
             {
-                board.show(true);
-
                 while (true)
                 {
                     try
@@ -29,15 +28,21 @@ public:
                     }
                     break;
                 }
+                board.show(true);
             }
             else
             {
-                board.show(true);
-                int pos = agent.Get_Next_Step(board);
-                row = pos/10; col = pos%10;
+                auto poses = agent.Get_Next_Steps(board);
 
-                printf("The Agent place at row %d, col %d\n", row, col);
-                board.Input(row, col);
+                int row, col;
+                for (int i = 1; i < poses.size(); ++i)
+                {
+                    auto p = poses.at(i);
+                    Core::decode(p, row, col);
+                    printf("The Agent place at row %d, col %d\n", row, col);
+                    board.Input(row, col);
+                    board.show(true);
+                }
             }
         }
         board.statistic().show();
@@ -46,5 +51,5 @@ public:
 private:
     bool player_turn = false;
     Core::checkboard board;
-    Agent::MinMax_Agent agent = {player_turn, 7};
+    Agent::Trivial_Agent agent = {!player_turn};
 };

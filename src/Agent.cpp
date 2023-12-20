@@ -10,35 +10,54 @@ int Agent::evaluate(Core::checkboard const& board, bool your_flag)
 /**
  * Trivial_Agent section
 */
-int Agent::Trivial_Agent::Get_Next_Step(Core::checkboard const& board)
+Agent::Steps Agent::Trivial_Agent::Get_Next_Steps(Core::checkboard const& board)
 {
     /**
-     * Use trivial way to get the pos
+     * Use greedy stategy to get the poses
      * :param board: the board.
-     * :return ret_value: the pos with the max count
+     * :return ret_value: the poses with the max count
     */
-    int ret_value = 0, maxCost = 0;
-    auto available_pos = board.get_available();
-    for (auto p : available_pos)
+    Core::AvaPos avapos = board.get_available();
+    std::vector<Agent::Steps> contains;
+    for (auto pos : avapos)
     {
-        int tmp = 0;
+        Core::checkboard t = board;
         int row, col;
-        Core::decode(p[0], row, col);
-        for (int i = 1; i < p.size(); ++i)
+        Core::decode(pos.at(0), row, col);
+        t.Input(row, col);
+        if (t.game_status() == false)
         {
-            int _r, _c;
-            Core::decode(p[i], _r, _c);
-
-            tmp += max(abs(_r - row), abs(_c - col));
+            contains.push_back({MAXINT, Core::encode(row, col)});
         }
-
-        if (tmp > maxCost)
+        else
         {
-            maxCost = tmp;
-            ret_value = p[0];
+            if (t.which_one_turn() != flag)
+            {
+                contains.push_back({evaluate(t, flag), Core::encode(row, col)});
+            }
+            else
+            {
+                auto res = Get_Next_Steps(t);
+                Agent::Steps tmp;
+                tmp.push_back(res.at(0));
+                tmp.push_back(Core::encode(row, col));
+                for (int i = 1; i < tmp.size(); ++i)
+                    tmp.push_back(res.at(i));
+                contains.push_back(tmp);
+            }
         }
     }
-    return ret_value;
+    int maxValue = MININT, maxIdx = -1;
+    for (int i = 0; i < contains.size(); ++i)
+    {
+        auto item = contains.at(i);
+        if (item.at(0) > maxValue)
+        {
+            maxValue = item.at(0);
+            maxIdx = i;
+        }
+    }
+    return contains.at(maxIdx);
 }
 
 /**

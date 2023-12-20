@@ -3,6 +3,7 @@
 
 namespace Core
 {
+    using AvaPos = std::vector< std::vector<int> >;
     const char white = 'O', black = '*', available = 'a', blank = '.';
     inline int encode(const int row, const int col){return row*10 + col;}
     inline void encode(int& pos, int const row, int const col){pos = encode(row, col);}
@@ -24,7 +25,7 @@ namespace Core
         void Input(int row, int col); // User Interface for put chessman
         bool which_one_turn() const; // return which one's turn
         bool game_status() const; // return game status
-        std::vector< std::vector<int> > get_available() const; // get available pos
+        AvaPos get_available() const; // get available pos
 
         Core::data statistic() const; // get game data
     protected:
@@ -46,6 +47,6 @@ namespace Core
         bool whose_turn = true; // true for black, false for white
         int height = 8, width = 8, count = 0;
         char board[10][10];
-        std::vector< std::vector<int> > now_available;
+        AvaPos now_available;
     };
 }
