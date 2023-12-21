@@ -147,3 +147,7 @@ Agent::Steps Agent::MinMax_Agent::Get_Next_Steps(Core::checkboard const& board, 
 /**
  * AlphaBeta_Agent section
 */
+Agent::Steps Agent::AlphaBeta_Agent::Get_Next_Steps(Core::checkboard const& board, int depth)
+{
+
+}

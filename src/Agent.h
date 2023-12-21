@@ -47,13 +47,13 @@ namespace Agent
     protected:
     private:
         int DEPTH;
-        const char path[20] = "./log";
     };
 
     class AlphaBeta_Agent : public _Agent_
     {
     public:
         AlphaBeta_Agent(bool flag=false, int d = 6):DEPTH(d), _Agent_(flag){}
+        Steps Get_Next_Steps(Core::checkboard const& board, int depth=0);
     private:
         int DEPTH;
     };
