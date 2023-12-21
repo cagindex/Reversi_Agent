@@ -1,5 +1,6 @@
 #include "checkboard.h"
 #include "Agent.h"
+#include <fstream>
 
 class game
 {
@@ -34,6 +35,7 @@ public:
             {
                 auto poses = agent.Get_Next_Steps(board);
 
+                log(poses);
                 int row, col;
                 for (int i = 1; i < poses.size(); ++i)
                 {
@@ -48,8 +50,26 @@ public:
         board.statistic().show();
         board.show(false);
     }
+protected:
+    void log(Agent::Steps poses)
+    {
+        std::ofstream outfile;
+        outfile.open(filepos, std::ios::out);
+
+        outfile << "Value: " << poses.at(0) << " | ";
+        for (int i = 1; i < poses.size(); ++i)
+        {
+            int row, col;
+            Core::decode(poses.at(i), row, col);
+            outfile << "(Row: " << row << " " << "Col: " << col << ") ";
+        }
+        outfile << "\n";
+        outfile.close();
+    }
 private:
     bool player_turn = false;
     Core::checkboard board;
-    Agent::Trivial_Agent agent = {!player_turn};
+    // Agent::Trivial_Agent agent = (!player_turn);
+    Agent::MinMax_Agent agent = {!player_turn, 6};
+    const char* filepos = "log";
 };

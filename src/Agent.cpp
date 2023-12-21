@@ -1,5 +1,4 @@
 #include "Agent.h"
-#include <fstream>
 int Agent::evaluate(Core::checkboard const& board, bool your_flag)
 {
     // return the score for board afor $your_flag$
@@ -27,7 +26,7 @@ Agent::Steps Agent::Trivial_Agent::Get_Next_Steps(Core::checkboard const& board)
         t.Input(row, col);
         if (t.game_status() == false)
         {
-            contains.push_back({MAXINT, Core::encode(row, col)});
+            contains.push_back({MAXINT-1, Core::encode(row, col)});
         }
         else
         {
@@ -39,11 +38,8 @@ Agent::Steps Agent::Trivial_Agent::Get_Next_Steps(Core::checkboard const& board)
             {
                 auto res = Get_Next_Steps(t);
                 Agent::Steps tmp;
-                tmp.push_back(res.at(0));
-                tmp.push_back(Core::encode(row, col));
-                for (int i = 1; i < tmp.size(); ++i)
-                    tmp.push_back(res.at(i));
-                contains.push_back(tmp);
+                Agent::Combine(res, Core::encode(row, col));
+                contains.push_back(res);
             }
         }
     }
@@ -63,88 +59,89 @@ Agent::Steps Agent::Trivial_Agent::Get_Next_Steps(Core::checkboard const& board)
 /**
  * MinMax_Agent section
 */
-int Agent::MinMax_Agent::Get_Next_Step(Core::checkboard const& board)
+Agent::Steps Agent::MinMax_Agent::Get_Next_Steps(Core::checkboard const& board, int depth)
 {
     /**
      * Get next step
      * :param board: check board
      * :return ret_pos: the pos to place
     */
-    auto p_list = board.get_available();
-
-    std::vector<cell> mem; 
-    int i = 0;
-    for (auto p : p_list)
+    if (depth == DEPTH)
     {
-        Core::checkboard t = board;
-        int row, col;
-        Core::decode(p[0], row, col);
-        t.Input(row, col);
-        mem.push_back({p[0], Next_Step(t, DEPTH-1)});
+        // reach the max depth
+        Agent::Steps ret;
+        ret.push_back(Agent::evaluate(board, flag));
+        return ret;
     }
+    Core::AvaPos avapos = board.get_available();
 
-    int maxValue = -1, ret_pos;
-    for (auto c : mem)
+    // Init
+    std::vector<Agent::Steps> contains;
+
+    // search
+    for (auto pos : avapos)
     {
-        if (maxValue < c.value)
+        // make copy
+        Core::checkboard t = board;
+        // get row and col pos
+        int row, col;
+        Core::decode(pos.at(0), row, col);
+        // input 
+        t.Input(row, col);
+        if (t.game_status() == false)
         {
-            ret_pos = c.pos;
-            maxValue = c.value;
+            // game over
+            contains.push_back({MAXINT-1, Core::encode(row, col)});
+        }
+        else
+        {
+            if (t.which_one_turn() != board.which_one_turn())
+            {
+                auto res = Get_Next_Steps(t, depth+1);
+                Agent::Steps tmp;
+                tmp.push_back(res.at(0));
+                tmp.push_back(Core::encode(row, col));
+                contains.push_back(tmp);
+            }
+            else
+            {
+                auto res = Get_Next_Steps(t, depth);
+                Agent::Combine(res, Core::encode(row, col));
+                contains.push_back(res);
+            }
         }
     }
-    log(mem);
-    return ret_pos;
-}
 
-int Agent::MinMax_Agent::Next_Step(Core::checkboard const& board, int depth)
-{
-    /**
-     * Use MinMax to search
-     * :param board: check board
-     * :param depth: now depth
-     * :return ret_value: if its mine turn, return the max value, while if not, return the min value
-    */
-    if (depth == 0) return Agent::evaluate(board, agent_flag);
-    if (board.game_status() == false) return Agent::evaluate(board, agent_flag); // game is over, return now evaluated value
-
-    auto p_list = board.get_available();
-    std::vector<int> v_list;
-    for(auto p : p_list)
+    Agent::Steps res;
+    if (board.which_one_turn() == flag)
     {
-        Core::checkboard t = board; // make a copy
-        int row, col;
-        Core::decode(p[0], row, col);
-        t.Input(row, col);
-        v_list.push_back(Next_Step(t, depth-1));
-    }
-
-    int ret_value ;
-    if (board.which_one_turn() == agent_flag)
-    {
-        ret_value = 0;
-        for (auto v : v_list) ret_value = max(ret_value, v);
+        int maxValue = MININT, maxIdx = -1;
+        for (int i = 0; i < contains.size(); ++i)
+        {
+            auto item = contains.at(i);
+            if (item.at(0) > maxValue)
+            {
+                maxValue = item.at(0);
+                maxIdx = i;
+            }
+        }
+        res = contains.at(maxIdx);
     }
     else
     {
-        ret_value = 0x7fffffff;
-        for (auto v : v_list) ret_value = min(ret_value, v);
+        int minValue = MAXINT, minIdx = -1;
+        for (int i = 0; i < contains.size(); ++i)
+        {
+            auto item = contains.at(i);
+            if (item.at(0) < minValue)
+            {
+                minValue = item.at(0);
+                minIdx = i;
+            }
+        }
+        res = contains.at(minIdx);
     }
-    return ret_value;
-}
-
-void Agent::MinMax_Agent::log(std::vector<cell> const& l)
-{
-    std::ofstream f(path);
-
-    for (auto c : l)
-    {
-        int row, col;
-        Core::decode(c.pos, row, col);
-        f << "row = " << row << ", " << "col = " << col;
-        f << " value = " << c.value << "\n";
-    }
-
-    f.close();
+    return res;
 }
 
 /**

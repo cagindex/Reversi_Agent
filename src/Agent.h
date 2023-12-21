@@ -16,6 +16,7 @@ namespace Agent
     using Steps = std::vector<int>;
 
     int evaluate(Core::checkboard const& board, bool your_flag);
+    inline void Combine(Steps & s, int value){s.insert(s.begin()+1, value);}
 
     struct cell
     {
@@ -38,24 +39,22 @@ namespace Agent
         Steps Get_Next_Steps(Core::checkboard const& board);
     };
 
-    class MinMax_Agent
+    class MinMax_Agent : public _Agent_
     {
     public:
-        MinMax_Agent(bool flag=false, int d = 6):DEPTH(d), agent_flag(flag){};
-        virtual int Get_Next_Step(Core::checkboard const& board);
+        MinMax_Agent(bool flag=false, int d = 6):DEPTH(d), _Agent_(flag){};
+        Steps Get_Next_Steps(Core::checkboard const& board, int depth=0);
     protected:
-        virtual int Next_Step(Core::checkboard const&, int depth);
-        void log(std::vector<cell> const& t);
     private:
         int DEPTH;
-        bool agent_flag; // true for black; while false for white
         const char path[20] = "./log";
     };
 
-    class AlphaBeta_Agent : public MinMax_Agent
+    class AlphaBeta_Agent : public _Agent_
     {
     public:
-        AlphaBeta_Agent(bool flag=false, int d = 6):MinMax_Agent(flag, d){}
-
+        AlphaBeta_Agent(bool flag=false, int d = 6):DEPTH(d), _Agent_(flag){}
+    private:
+        int DEPTH;
     };
 }

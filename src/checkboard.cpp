@@ -20,6 +20,19 @@ void Core::data::show()
 Core::checkboard::checkboard()
 {
     std::memset(board, blank, sizeof(char)*100);
+    // board[2][2] = black;
+    // board[2][6] = black;
+    // board[3][3] = black;
+    // board[3][4] = black;
+    // board[3][5] = black;
+    // board[4][4] = black;
+    // board[5][4] = black;
+    // board[5][5] = black;
+    // board[4][5] = white;
+    // board[4][6] = white;
+    // board[5][6] = white;
+    // board[6][6] = white;
+
     board[4][4] = white;
     board[4][5] = black;
     board[5][4] = black;
