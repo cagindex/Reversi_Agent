@@ -34,6 +34,43 @@ Core::checkboard::checkboard()
     board[5][4] = black;
     board[5][5] = white;
 
+    // board[1][5] = black;
+    // board[1][6] = black;
+    // board[2][5] = black;
+    // board[2][6] = black;
+    // board[3][1] = black;
+    // board[3][3] = black;
+    // board[3][4] = black;
+    // board[3][5] = black;
+    // board[3][6] = black;
+    // board[3][7] = black;
+    // board[3][8] = black;
+    // board[4][2] = black;
+    // board[4][3] = black;
+    // board[4][4] = white;
+    // board[4][5] = white;
+    // board[4][6] = black;
+    // board[4][7] = black;
+    // board[4][8] = black;
+    // board[5][2] = black;
+    // board[5][3] = black;
+    // board[5][4] = black;
+    // board[5][5] = white;
+    // board[5][6] = black;
+    // board[5][7] = black;
+    // board[5][8] = black;
+    // board[6][2] = black;
+    // board[6][3] = white;
+    // board[6][4] = white;
+    // board[6][5] = white;
+    // board[6][6] = white;
+    // board[6][8] = black;
+    // board[7][3] = black;
+    // board[7][6] = white;
+    // board[7][8] = black;
+    // board[8][3] = white;
+    // board[8][4] = black;
+
     this->FindAvailable(now_available);
 }
 

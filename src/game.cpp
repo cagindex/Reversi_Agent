@@ -7,6 +7,8 @@ class game
 public:
     void start()
     {
+        std::ofstream outfile(filepos, std::ios::out);
+        outfile.close();
         int row, col;
         board.show(true);
         while(board.game_status())
@@ -33,8 +35,8 @@ public:
             }
             else
             {
-                log(Agent::Steps({0, 0}));
                 auto poses = agent.Get_Next_Steps(board);
+                log(poses);
 
                 int row, col;
                 for (int i = 1; i < poses.size(); ++i)
@@ -54,7 +56,7 @@ protected:
     void log(Agent::Steps poses)
     {
         std::ofstream outfile;
-        outfile.open(filepos, std::ios::out);
+        outfile.open(filepos, std::ios::app);
 
         outfile << "Value: " << poses.at(0) << " | ";
         for (int i = 1; i < poses.size(); ++i)
@@ -67,10 +69,10 @@ protected:
         outfile.close();
     }
 private:
-    bool player_turn = false;
+    bool player_turn = true;
     Core::checkboard board;
     // Agent::Trivial_Agent agent = (!player_turn);
     // Agent::MinMax_Agent agent = {!player_turn, 3};
-    Agent::AlphaBeta_Agent agent = {!player_turn, 10};
+    Agent::AlphaBeta_Agent agent = {!player_turn, 9};
     const char* filepos = "log";
 };

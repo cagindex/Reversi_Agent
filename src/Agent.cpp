@@ -203,9 +203,21 @@ Agent::Steps Agent::AlphaBeta_Agent::Get_Next_Steps(Core::checkboard const& boar
 
         if (t.game_status() == false)
         {
-            contains.push_back({MAXINT, Core::encode(row, col)});
 
-            alpha = max(alpha, MAXINT);
+            auto res = t.statistic();
+            int us = flag ? res.black_count : res.white_count;
+            int it = flag ? res.white_count : res.black_count;
+
+            if (us > it)
+            {
+                alpha = max(alpha, MAXINT);
+                contains.push_back({MAXINT, Core::encode(row, col)});
+            }
+            else
+            {
+                alpha = max(alpha, (int)MININT);
+                contains.push_back({(int)MININT, Core::encode(row, col)});
+            }
             if (beta <= alpha)
                 break;
         }
@@ -266,7 +278,14 @@ int Agent::AlphaBeta_Agent::alphabeta(Core::checkboard const& board, int depth, 
 
             if (t.game_status() == false)
             {
-                alpha = max(alpha, MAXINT-1);
+                auto res = t.statistic();
+                int us = flag ? res.black_count : res.white_count;
+                int it = flag ? res.white_count : res.black_count;
+
+                if (us > it)
+                    alpha = max(alpha, MAXINT-1);
+                else
+                    alpha = max(alpha, (int)MININT+1);
             }
             else
             {
@@ -293,7 +312,14 @@ int Agent::AlphaBeta_Agent::alphabeta(Core::checkboard const& board, int depth, 
 
             if (t.game_status() == false)
             {
-                beta = min(beta, (int)(MININT) + 1);
+                auto res = t.statistic();
+                int us = flag ? res.black_count : res.white_count;
+                int it = flag ? res.white_count : res.black_count;
+
+                if (us > it)
+                    beta = min(beta, MAXINT-1);
+                else
+                    beta = min(beta, (int)MININT+1);
             }
             else
             {
