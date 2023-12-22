@@ -28,6 +28,7 @@ namespace Core
         AvaPos get_available() const; // get available pos
 
         Core::data statistic() const; // get game data
+        const char* boardInfo() const {return (char*)board;}
     protected:
         void show(std::vector< std::vector<int> > const& t = std::vector< std::vector<int> >()) const;
         char& at(int row, int col);

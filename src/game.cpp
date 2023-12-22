@@ -67,9 +67,10 @@ protected:
         outfile.close();
     }
 private:
-    bool player_turn = false;
+    bool player_turn = true;
     Core::checkboard board;
     // Agent::Trivial_Agent agent = (!player_turn);
-    Agent::MinMax_Agent agent = {!player_turn, 6};
+    // Agent::MinMax_Agent agent = {!player_turn, 10};
+    Agent::AlphaBeta_Agent agent = {!player_turn, 10};
     const char* filepos = "log";
 };

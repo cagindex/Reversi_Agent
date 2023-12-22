@@ -54,6 +54,8 @@ namespace Agent
     public:
         AlphaBeta_Agent(bool flag=false, int d = 6):DEPTH(d), _Agent_(flag){}
         Steps Get_Next_Steps(Core::checkboard const& board, int depth=0);
+    protected:
+        int alphabeta(Core::checkboard const& board, int depth, int alpha, int beta);
     private:
         int DEPTH;
     };
