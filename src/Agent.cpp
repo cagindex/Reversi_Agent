@@ -19,6 +19,16 @@ int Agent::evaluate(Core::checkboard const& board, bool your_flag)
     0, -3, -29, 3, 1, 1, 3, -29, -3, 0,
     0, 65,  -3, 6, 4, 4, 6,  -3, 65, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    // 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
     };
 
     const char note = (your_flag == true) ? Core::black : Core::white;
@@ -93,6 +103,7 @@ Agent::Steps Agent::MinMax_Agent::Get_Next_Steps(Core::checkboard const& board, 
      * :param board: check board
      * :return ret_pos: the pos to place
     */
+    // log(board, depth);
     if (depth == DEPTH)
     {
         // reach the max depth
@@ -118,7 +129,10 @@ Agent::Steps Agent::MinMax_Agent::Get_Next_Steps(Core::checkboard const& board, 
         if (t.game_status() == false)
         {
             // game over
-            contains.push_back({MAXINT-1, Core::encode(row, col)});
+            if (board.which_one_turn() == flag)
+                contains.push_back({MAXINT-1, Core::encode(row, col)});
+            else
+                contains.push_back({(int)MININT+1, Core::encode(row, col)});
         }
         else
         {
@@ -168,13 +182,14 @@ Agent::Steps Agent::MinMax_Agent::Get_Next_Steps(Core::checkboard const& board, 
         }
         res = contains.at(minIdx);
     }
+    log(board, depth, contains);
     return res;
 }
 
 /**
  * AlphaBeta_Agent section
 */
-Agent::Steps Agent::AlphaBeta_Agent::Get_Next_Steps(Core::checkboard const& board, int depth)
+Agent::Steps Agent::AlphaBeta_Agent::Get_Next_Steps(Core::checkboard const& board, int depth, int alpha, int beta)
 {
     Core::AvaPos avapos = board.get_available();
     std::vector<Agent::Steps> contains;
@@ -188,20 +203,32 @@ Agent::Steps Agent::AlphaBeta_Agent::Get_Next_Steps(Core::checkboard const& boar
 
         if (t.game_status() == false)
         {
-            contains.push_back({MAXINT-1, Core::encode(row, col)});
+            contains.push_back({MAXINT, Core::encode(row, col)});
+
+            alpha = max(alpha, MAXINT);
+            if (beta <= alpha)
+                break;
         }
         else
         {
             if (t.which_one_turn() != flag)
             {
-                int res = alphabeta(board, depth+1, (int)MININT, (int)MAXINT);
+                int res = alphabeta(t, depth+1, alpha, beta);
+                alpha = max(alpha, res);
                 contains.push_back({res, Core::encode(row, col)});
+
+                if (beta <= alpha)
+                    break;
             }
             else
             {
-                Agent::Steps res = Get_Next_Steps(t, depth);
+                Agent::Steps res = Get_Next_Steps(t, depth, alpha, beta);
+                alpha = max(alpha, res.at(0));
                 Agent::Combine(res, Core::encode(row, col));
                 contains.push_back(res);
+
+                if (beta <= alpha)
+                    break;
             }
         }
     }
@@ -216,15 +243,12 @@ Agent::Steps Agent::AlphaBeta_Agent::Get_Next_Steps(Core::checkboard const& boar
             maxIdx = i;
         }
     }
+    log(board, depth, contains);
     return contains.at(maxIdx);
 }
 
 int Agent::AlphaBeta_Agent::alphabeta(Core::checkboard const& board, int depth, int alpha, int beta)
 {
-    if (board.game_status() == false)
-    {
-        return MAXINT-1;
-    }
     if (depth == DEPTH)
     {
         return Agent::evaluate(board, flag);
@@ -240,10 +264,17 @@ int Agent::AlphaBeta_Agent::alphabeta(Core::checkboard const& board, int depth, 
             Core::decode(pos.at(0), row, col);
             t.Input(row, col);
 
-            if (t.which_one_turn() == board.which_one_turn())
-                alpha = max(alpha, alphabeta(t, depth, alpha, beta));
+            if (t.game_status() == false)
+            {
+                alpha = max(alpha, MAXINT-1);
+            }
             else
-                alpha = max(alpha, alphabeta(t, depth+1, alpha, beta));
+            {
+                if (t.which_one_turn() == board.which_one_turn())
+                    alpha = max(alpha, alphabeta(t, depth, alpha, beta));
+                else
+                    alpha = max(alpha, alphabeta(t, depth+1, alpha, beta));
+            }
                 
             if (beta <= alpha)
                 break;
@@ -260,14 +291,68 @@ int Agent::AlphaBeta_Agent::alphabeta(Core::checkboard const& board, int depth, 
             Core::decode(pos.at(0), row, col);
             t.Input(row, col);
 
-            if (t.which_one_turn() == board.which_one_turn())
-                beta = min(beta, alphabeta(t, depth, alpha, beta));
-            else 
-                beta = min(beta, alphabeta(t, depth+1, alpha, beta));
+            if (t.game_status() == false)
+            {
+                beta = min(beta, (int)(MININT) + 1);
+            }
+            else
+            {
+                if (t.which_one_turn() == board.which_one_turn())
+                    beta = min(beta, alphabeta(t, depth, alpha, beta));
+                else 
+                    beta = min(beta, alphabeta(t, depth+1, alpha, beta));
+            }
         
             if (beta <= alpha)
                 break;
         }
         return beta;
     }
+}
+
+/**
+ * Assistant section
+*/
+void Agent::log(Core::checkboard const& board, int depth, std::vector<Agent::Steps> const& res)
+{
+    const char* path = "./log";
+    const char* b = board.boardInfo();
+    char p[10][10];
+    std::memcpy((char*)p, b, sizeof(char)*100);
+
+    Core::AvaPos avapos = board.get_available(); 
+
+    std::fstream outfile(path, std::ios::app);
+    outfile << "The board with depth: " << depth << " with " << ((board.which_one_turn()) ? "black" : "white") << " turn " << "\n";
+
+    for (auto pos : avapos)
+    {
+        int row, col;
+        Core::decode(pos.at(0), row, col);
+        p[row][col] = Core::available;
+    }
+
+    for (int i = 1; i <= 8; ++i)
+    {
+        for (int j = 1; j <= 8; ++j)
+        {
+            outfile << p[i][j] << " ";
+        }
+        outfile << "\n";
+    }
+
+    outfile << "The possible way and value is: \n";
+    int idx = 1;
+    for (auto item : res)
+    {
+        outfile << "Step " << idx++ << ": " << "Value: " << item.at(0) << " ,";
+        for (int i = 1; i < item.size(); ++i)
+        {
+            int row, col;
+            Core::decode(item.at(i), row, col);
+            outfile << "pos" << i << " row: " <<  row << " col: " << col << " ";
+        }
+        outfile << "\n";
+    }
+    outfile.close();
 }

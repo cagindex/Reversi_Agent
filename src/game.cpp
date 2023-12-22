@@ -33,9 +33,9 @@ public:
             }
             else
             {
+                log(Agent::Steps({0, 0}));
                 auto poses = agent.Get_Next_Steps(board);
 
-                log(poses);
                 int row, col;
                 for (int i = 1; i < poses.size(); ++i)
                 {
@@ -67,10 +67,10 @@ protected:
         outfile.close();
     }
 private:
-    bool player_turn = true;
+    bool player_turn = false;
     Core::checkboard board;
     // Agent::Trivial_Agent agent = (!player_turn);
-    // Agent::MinMax_Agent agent = {!player_turn, 10};
+    // Agent::MinMax_Agent agent = {!player_turn, 3};
     Agent::AlphaBeta_Agent agent = {!player_turn, 10};
     const char* filepos = "log";
 };
